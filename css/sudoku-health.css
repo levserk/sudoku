@@ -1,0 +1,23 @@
+#testResults {
+	margin-left:100px;
+	margin-top:50px;
+}
+
+.positive {
+	font-weight: bold;
+	color: green;
+}
+
+.negative {
+	font-weight: bold;
+	color: red;
+}
+
+.neutral {
+    font-weight: bold;
+    color: #CCC;
+}
+
+.gray {	
+	color: #CCC;
+}

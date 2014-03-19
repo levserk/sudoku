@@ -1,0 +1,146 @@
+.cpRulesSelector {
+    min-width: 60px !important;
+    width: 60px !important;
+    border-color: #777 !important;
+    /*border-width: 1px;*/
+    background-color: #E5E5E5;
+}
+
+.closePanelImg {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    float: right;
+    cursor: pointer;
+}
+
+.fcBubblePanel {
+    position: absolute;
+    background: none repeat scroll 0 0 white;
+    border-radius: 3px 3px 3px 3px;
+    color: #444444;
+    font-family: Verdana;
+    font-size: 10pt;
+    width: 545px;
+    z-index: 7500;
+}
+
+.bottomPanel {
+    display: none;
+    background: none repeat scroll 0 0 white;
+    border-radius: 3px 3px 3px 3px;
+    color: #444444;
+    font-family: Verdana;
+    font-size: 10pt;
+    clear: both;
+}
+
+.paddingLayer {
+    padding: 15px 15px 15px 15px;
+}
+
+.fcBubblePanel h4 {
+    padding-top: 0px;
+    margin-top: 0px;
+}
+
+.okCancelPanel {
+    margin-top: 20px;
+    margin-bottom: 5px;
+}
+
+#loginResult {
+    float: left;
+}
+
+.tdTop {
+    vertical-align: top;
+}
+
+#loginRegisterPanel {
+    display: none;
+}
+
+.clear {
+    clear: both;
+}
+
+#overFieldShadow {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    opacity: 0.25;
+    filter: alpha(opacity = 25);
+    z-index: 7500;
+}
+
+#loginResult {
+    padding-left: 10px;
+    color: red;
+}
+
+.noRightBorder {
+    border-right: none !important;
+}
+
+.bottomPanel h4 {
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+#bonusNotice {
+    display: none;
+    text-align: center;
+    color: #121212;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 14pt;
+    position: absolute;
+    left: 0px;
+    top: 265px;
+    width: 100%;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+}
+
+#bonusNotice p {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#loadingProgressContainer {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.loadingProgressOuter {
+    width: 100%;
+    height: 100%;
+    display: table;
+}
+
+#loadingProgress {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    color: #CCC;
+    opacity: 0.25;
+    filter: alpha(opacity = 25);
+    font-family: Verdana;
+    font-size: 72pt;
+}
+
+.activeSelector {
+    /*color: #777;*/
+    /*background-color: #DDDDDD;*/
+    /*font-weight: bold !important;*/
+    background-color: #FFFFCA;
+    cursor: default !important;
+}
+
+.activeSelector:hover {
+    background-color: #FFFFCA !important;
+}

@@ -1,0 +1,33 @@
+.gameArea, .bottomArea {
+    width: 620px;
+}
+
+.titleBand {
+    background: #4C4C4C !important;
+}
+
+.titleBand a{
+    background: #4C4C4C !important;
+}
+
+.gameArea {
+    background: url(/sudoku/img/desc/wood1.jpg);
+    border-color: #4C4C4C !important;
+    /*box-shadow: 0px 0px 25px #4C4C4C;*/
+}
+
+.controlPanel {
+    background: #F0F0F0;
+}
+
+#field {
+    position: relative;
+    width: 100%;
+    padding-bottom: 60px;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+.informationMain img {
+    width: 100%;
+}

@@ -1,0 +1,107 @@
+<!-- params panel -->
+<div class="bubblePanel _hackOverFieldPanel" id="parametersPanel">
+    <img id="gpCloseIcon" src="/img/icons/icon_close.png" alt="<?=$i18n->get('parameters', 'closeIconAltText')?>"/>
+
+    <div class="overFieldInnerPanel" style="padding-right: 0px !important;">
+        <?php
+        if (isset($auxParamTop)) {
+            echo $auxParamTop;
+        }
+    ?>
+
+        <h4><?=$i18n->get('parameters', 'header')?></h4>
+
+        <div id="chooseGameLevelPanel" style="margin-left: -3px;">
+            <table>
+                <tr>
+                    <td style="vertical-align: top;">
+                        <input id="playRandomOption" type="radio" name="playMode"/>
+                        <label for="playRandomOption"><?=$i18n->get('parameters', 'playRandomOption')?></label>
+                    </td>
+                    <td style="vertical-align: top;">
+                        <input id="playSuccOption" type="radio" name="playMode"/>
+                        <label for="playSuccOption"><?=$i18n->get('parameters', 'playSuccOption')?></label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    <div id="gameIdArea">
+        <h4 style="margin-top: 20px;">Ввести номер говололомки </h4> (1-30000)
+        &nbsp;&nbsp;<input id="gameIdTextField" type="text" size="4" maxlength="6">
+    </div>
+
+
+    <h4 style="margin-top: 20px;">Выбор управления: </h4>
+    <div id="buttonsBottomPanel" style="width: 225px;text-align: center; float: left; padding-right: 32px;" >
+        <input type="checkbox" id="cbButtonsBottomPanel"> Версия для планшета (панель с кнопками внизу)
+        <div id="buttonsBottomPanelSub" style="font-size: 11px; display: none;">
+            <input id="botButPriority1" type="radio" name="botButPriority">клетка→цифра</input>
+            <input id="botButPriority2" type="radio" name="botButPriority">цифра→клетка</input>
+        </div>
+    </div>
+
+        <div>
+            <input type="checkbox" id="cbHideCandidates"> Скрыть подсказки в клетках
+        </div>
+
+    <div id="chooseGameTypeSection" style="margin-top: 30px;">
+
+        <h4 style="margin-top: 45px;">Выбор сложности головоломок</h4>
+
+        <table width="100%">
+            <tr>
+                <td>
+
+                    <table width="90%" style="text-align: center">
+
+                        <tr>
+                            <td style="width: 30px; text-align: right;">
+                                <input type="radio" name="gameType" id="playAll">
+                            </td>
+                            <td>
+                                <label for="playAll"><?=$i18n->get("parameters.category", "all")?></label>
+                            </td>
+
+                            <td style="width: 45px; text-align: right;">
+                                <input type="radio" name="gameType" id="playEasy">
+                            </td>
+                            <td>
+                                <label for="playEasy"><?=$i18n->get("parameters.category", "easy")?><br>(1-5000)</label>
+                            </td>
+
+                            <td style="width: 45px; text-align: right;">
+                                <input type="radio" name="gameType" id="playNormal">
+
+                            </td>
+                            <td>
+                                <label for="playNormal"><?=$i18n->get("parameters.category", "normal")?></label>
+                                <br>(5001-20000)
+                            </td>
+
+                            <td  style="width: 45px; text-align: right;">
+                                <input type="radio" name="gameType" id="playHard">
+                            </td>
+                            <td>
+                                <label for="playHard"><?=$i18n->get("parameters.category", "hard")?></label>
+                                <br>(20001-30000)
+                            </td>
+                        </tr>
+
+                    </table>
+
+                </td>
+            </tr>
+        </table>
+
+    </div>
+
+
+    <div id="gpCommitCancelSection" style="margin-top: 10px;">
+        <div class="constantWidthBtnParams" id="gpCommit"><?=$i18n->get("parameters", "commitBtnLabel")?></div>
+        <div class="constantWidthBtnParams" id="gpCancel"><?=$i18n->get("parameters", "cancelBtnLabel")?></div>
+    </div>
+
+</div>
+</div>
+<!-- end of params -->

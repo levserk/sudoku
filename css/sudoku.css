@@ -1,0 +1,218 @@
+body{
+    background: #B1B5B9;
+}
+
+.page{
+    margin: 0 auto;
+    width: 100%;
+    min-width: 400px;
+}
+.desc{
+    width: 500px;
+    margin: 0 auto;
+    padding: 10px;
+    padding-top: 0px;
+}
+.table {
+    /*border: #999 0.07em solid;*/
+    background: white;
+    border-radius: 3px;
+}
+.tableBoard{
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    border: 3px solid gray;
+    border-collapse: collapse;
+    border-spacing: 0px;
+    padding: 0px;
+    font-family: arial,sans-serif;
+    table-layout: fixed;
+    border-radius: 5px;
+}
+.tableBoard tr{
+    padding: 0px;
+    font-size: 35px;
+    font-weight: normal;
+    cursor: default;
+    border: 1px solid #4C4C4C;
+}
+.tableBoard td{
+    background: rgba(254, 254, 254, 0.85);
+    padding: 0px;
+    border: 1px solid #4C4C4C;
+}
+
+.tableButtons{
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    border: none !important;
+    border-spacing: 0px;
+    background: white;
+}
+.tableButtons tr {
+    border: none !important;
+}
+.tableButtons td {
+    border: none;
+    background: none;
+    font-size: 13px;
+    color: #878e95;
+    width: 33.333%;
+    cursor: default;
+}
+.tableButtonsTD:hover{
+    background-color: #ffeb94;
+}
+.tableButtonsTDchousen{
+    background-color: #ffeb94 !important;
+}
+.tableButtonsTDcandidate{
+    font-weight: bold;
+    color: #000000 !important;
+}
+.cellDiv{
+    width: 52px;
+    height: 52px;
+    margin: 0 auto;
+    display: table;
+    text-align: center;
+    border: 2px solid rgba(255, 255, 255, 0);
+}
+.cellDivHover{
+    box-shadow: 0px 0px 10px rgba(223, 151, 24, 1), 0px 0px 8px rgb(255, 163, 0);
+    border: 2px solid rgba(232, 135, 16, 0.55);
+}
+
+.cellDivTextHighlight{
+    text-shadow: 0px 0px 10px rgba(223, 151, 24, 1), 0px 0px 8px rgb(255, 163, 0);
+}
+
+.cellDiv span{
+    display:table-cell;
+    vertical-align:middle
+}
+.cwrong{
+    color: #ff1015;
+    border-color: #ff1015;
+    font-family: 'Comic Sans MS', cursive;
+}
+.cright{
+    color: #0B8310;
+    font-family: 'Comic Sans MS', cursive;
+}
+.cuser{
+    color: #1320bb;
+    font-family: 'Comic Sans MS', cursive;
+}
+.cprev{
+    font-weight: bold;
+    color: #1320bb !important;
+}
+.ccandidate {
+    color: #808080;
+}
+.cthrough {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+#buttons {
+    width: 500px;
+    margin: 0 auto;
+}
+.bottomButtonsTable{
+    width: 100%;
+    border-spacing: 2px;
+    table-layout: fixed;
+}
+
+.bottomButton {
+    cursor: pointer;
+    width: 52px;
+    height: 50px;
+    font-family: 'Comic Sans MS', cursive;
+    border-radius: 8px;
+    color: #4a484a;
+    font-size: 30px;
+    background: #F0F0F0;
+    border: solid #b0b0b0 2px;
+}
+
+.bottomButton:hover{
+    background: #fcf0c1;
+    border-color: #a3a3a3;
+}
+.bottomButtonActive{
+    background: #fcf0c1;
+    border-color: #a3a3a3;
+}
+
+#topNumbers{
+    width: 500px;
+    text-align: center;
+    margin: 0px auto;
+    color: #382D2D;
+    margin: 0px auto;
+    font-size: 12pt;
+    padding-top: 6px;
+}
+
+#leftNumbers{
+    float: left;
+    height: 503px;
+    padding-left: 37px;
+    color: #382D2D;
+    font-family: Verdana;
+    font-size: 10pt;
+    text-align: center;
+}
+
+
+#closeInformationBubble{
+    width: auto;
+    color: #e2feff;
+}
+
+#wonAttemptNotice {
+    color: rgb(255, 255, 255);
+    display: none;
+    font-size: 14px;
+    position: absolute;
+    text-align: center;
+    bottom: 50px;
+}
+
+#infoFieldPanel {
+    color: #382D2D;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 8pt;
+    position: absolute;
+    right: 10px;
+    display: none;
+    bottom: 25px;
+}
+
+#numberCounter{
+    position: absolute;
+    right: 60px;
+    bottom: -3px;
+    color: #382D2D;
+    font-family: Verdana;
+    font-weight: bold;
+    font-size: 10pt;
+}
+
+#markCell{
+color: #382D2D;
+font-family: Verdana;
+font-weight: bold;
+font-size: 8pt;
+position: absolute;
+right: 18px;
+bottom: 37px;
+cursor: pointer;
+text-decoration: underline;
+}
