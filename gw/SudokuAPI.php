@@ -30,14 +30,14 @@ class SudokuServer extends SolitaireServer
 
     public function loadDeck($gameId)
     {
-        $query = "SELECT `puzzle`
+        $query = "SELECT `puzzle`, `answer`
                   FROM $this->gameListTableName
                   WHERE gameId = $gameId";
 
         $queryResult = smart_mysql_query($query);
         $row = mysql_fetch_assoc($queryResult);
         if ($row) {
-            return $row['puzzle'];
+            return $row['puzzle'].':'.$row['answer'];;
         } else return null;
     }
 

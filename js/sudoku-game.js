@@ -89,15 +89,27 @@ function SudokuGame(){
     this.isActive = function(){return fActive;};
 
     this.help = function(){
-        if (fMistake){
+        if (false && fMistake){
             //enterDiv(getDiv(mistakeCell.i,mistakeCell.j),false);
             getDiv(mistakeCell.i,mistakeCell.j).addClass('cwrong');
         } else {
             var clue = that._helper.getHelp();
             if (clue && clue.cell){
-                leaveDiv(getDiv(oldci,oldcj));
-                oldci = clue.cell.i; oldcj = clue.cell.j;
-                enterDiv(getDiv(clue.cell.i,clue.cell.j),false);
+                switch (clue.type){
+                    case 0:
+                        getDiv(clue.cell.i,clue.cell.j).addClass('cwrong');
+                        break;
+                    case 1:
+                        leaveDiv(getDiv(oldci,oldcj));
+                        oldci = clue.cell.i; oldcj = clue.cell.j;
+                        enterDiv(getDiv(clue.cell.i,clue.cell.j),false);
+                        break;
+                    case 2:
+                        leaveDiv(getDiv(oldci,oldcj));
+                        oldci = clue.cell.i; oldcj = clue.cell.j;
+                        enterDiv(getDiv(clue.cell.i,clue.cell.j),false);
+                        break;
+                }
             }
         }
     };
@@ -257,6 +269,7 @@ function SudokuGame(){
 
     function updated(){
         $('#numberCounter').html('Цифр: '+sudoku.numNumbers());
+        return;
         if (fMistake){
             if (!sudoku.checkMistakes() && mistakeCell!=null){
                 getDiv(mistakeCell.i,mistakeCell.j).removeClass('cwrong');
@@ -711,16 +724,18 @@ function SudokuGame(){
 }
 
 function Sudoku(onCellUpdate, onPuzzleComplete){
-    var puzzle, grid, size, lineSize;
+    var puzzle, grid, size, lineSize, answ;
     var that = this;
     var numbers=0;
     var clues = 0;
     var max;
 
     this.loadPuzzle = function(str, gridSize){
+        str = str.split(':');
         size = gridSize;
         lineSize = 3; //Math.sqrt(size);
-        puzzle = str.split('.').join('0').split("").map(Number);
+        puzzle = str[0].split('.').join('0').split("").map(Number);
+        answ = str[1].split('.').join('0').split("").map(Number);
         init();
     };
 
@@ -765,6 +780,11 @@ function Sudoku(onCellUpdate, onPuzzleComplete){
 
     this.cell = function(ci,cj){return grid[ci][cj];};
 
+    this.isValid = function(cell){
+        if (!cell || cell.value == 0) return true;
+        return answ[cell.i*size+cell.j]==cell.value;
+    };
+
     this.grid = function(){return grid;};
 
     this.numNumbers = function(){return numbers;}
@@ -783,25 +803,6 @@ function Sudoku(onCellUpdate, onPuzzleComplete){
     function gridUpdated(ci,cj){
         var updatedCells = [], oldw, i, j;
         updatedCells.push(grid[ci][cj]);
-        grid[ci][cj].isWrong = checkValid(ci,cj);
-        for (i = 0 ; i < size; i++){
-            oldw = grid[i][cj].isWrong;
-            grid[i][cj].isWrong = checkValid(i,cj);
-            if (grid[i][cj].isWrong!=oldw) updatedCells.push(grid[i][cj]);
-        }
-        for (j = 0 ; j < size; j++){
-            oldw = grid[ci][j].isWrong;
-            grid[ci][j].isWrong = checkValid(ci,j);
-            if (grid[ci][j].isWrong!=oldw) updatedCells.push(grid[ci][j]);
-        }
-        var reg = that.getRegion(ci,cj);
-        for (i=reg.i1; i<=reg.i2; i++){
-            for (j=reg.j1; j<=reg.j2; j++){
-                oldw = grid[i][j].isWrong;
-                grid[i][j].isWrong = checkValid(i,j);
-                if (grid[i][j].isWrong!=oldw) updatedCells.push(grid[i][j]);
-            }
-        }
         var fCompleate = checkComplete();
 
         for (i=0; i<updatedCells.length; i++)
@@ -996,6 +997,7 @@ function Cell(val,i,j){
     this.isWrong = false;
     this.i = i;
     this.j = j;
+    this.time = new Date();
     var that = this;
     var candidates = [0,0,0,0,0,0,0,0,0,0];
     var ucandidates = [0,0,0,0,0,0,0,0,0,0];
@@ -1003,6 +1005,7 @@ function Cell(val,i,j){
     this.set = function(v){
         that.prev = that.value;
         that.value = v;
+        that.time = new Date();
     };
 
     this.getId = function() {return 'c'+that.i+that.j; };
@@ -1026,22 +1029,41 @@ function Cell(val,i,j){
         that.prev = 0;
         candidates = [0,0,0,0,0,0,0,0,0,0];
         ucandidates = [0,0,0,0,0,0,0,0,0,0];
+        that.time = new Date();
     };
 
 }
 
 
 function SudokuHelper(_sudoku){
-    var _SINGLE = 1, _HIDDENSINGLE = 2;
+    var _MISTAKE= 0, _SINGLE = 1, _HIDDENSINGLE = 2;
     var sudoku = _sudoku;
     var clue = null;
     var gridCandidates;
     var grid;
 
     this.getHelp = function(){
+        if (!checkValid()) return clue;
         if (!checkClue()) clue = findNextTurn();
         return clue;
     };
+
+    function checkValid(){
+        var wrongCell = null;
+        sudoku.foreachCell(function(cell){
+            if (!sudoku.isValid(cell)){
+                if (!wrongCell || cell.time<wrongCell.time)
+                    wrongCell = cell;
+            }
+        });
+        if (wrongCell){
+            clue = {
+                cell: wrongCell,
+                type:_MISTAKE
+            };
+            return false;
+        } return true;
+    }
 
     function checkClue(){
         if (clue==null || clue.cell.value>0) return false;
