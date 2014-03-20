@@ -286,6 +286,10 @@ function GameController(_cs, _serializer) {
             that.game.help()
         });
 
+        $('#markCell').click(function (){
+            if (fSuperMove) that.doSuperMove();
+        });
+
         jQuery(document).keydown(this.keyDown);
 
         $(window).unload(function () {

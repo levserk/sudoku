@@ -1,12 +1,14 @@
 var _MOVE = 1;
 var _CANDIDATE = 2;
 var _SWITCHHELP = 3;
+var _MARKCELL = 4;
 function SudokuGame(){
     var that=this;
     var oldci=null, oldcj=null, prevButton;
     var fShowCandidates = true;
     var fAutoCandidates = false, fHightlight = true, clickPrior = 1, fSuperMove = false;
     var fActive, fComplete, fSilent=false, fFixed=false, fAutoCheck=false, fShowButtons=true, fAlt=false;
+    var fStartGame = false;
     var cFILL_CELL_BACKGROUND = '#DFDFDF';
     var colors = ['#DFDFDF', '#E2E3FC', '#E8FDE7','#E7F9FD', '#FCF0ED', '#F6FAE5'];
     var clID=0;
@@ -102,16 +104,30 @@ function SudokuGame(){
     this.undoMove = function(move){
         fSilent = true;
         console.log('plug', 'undoMove', move);
-        if (move.type==_SWITCHHELP){
-            that.changeShowCandidates(move.oldn);
-        } else {
-            prevCell = sudoku.cell(move.ci,move.cj);
-            if (move.type==_MOVE)sudoku.setCell(move.ci, move.cj, move.oldn);
-            if (move.type==_CANDIDATE)sudoku.setCellCandidate(move.ci,move.cj,move.newn,fAutoCandidates);
-            leaveDiv(getDiv(oldci,oldcj));
-            enterDiv(getDiv(move.ci, move.cj),false);
-            oldci = move.ci;
-            oldcj = move.cj;
+        switch (move.type){
+            case _SWITCHHELP:
+                that.changeShowCandidates(move.oldn);
+                break;
+            case _MARKCELL:
+                if (move.oldn>0) marks.addMark(sudoku.cell(move.ci,move.cj));
+                else marks.removeMark(sudoku.cell(move.ci,move.cj));
+                break;
+            case _CANDIDATE:
+                prevCell = sudoku.cell(move.ci,move.cj);
+                sudoku.setCellCandidate(move.ci,move.cj,move.newn,fAutoCandidates);
+                leaveDiv(getDiv(oldci,oldcj));
+                enterDiv(getDiv(move.ci, move.cj),false);
+                oldci = move.ci;
+                oldcj = move.cj;
+                break;
+            case _MOVE:
+                prevCell = sudoku.cell(move.ci,move.cj);
+                sudoku.setCell(move.ci, move.cj, move.oldn);
+                leaveDiv(getDiv(oldci,oldcj));
+                enterDiv(getDiv(move.ci, move.cj),false);
+                oldci = move.ci;
+                oldcj = move.cj;
+                break;
         }
         fSilent = false;
         updated();
@@ -120,21 +136,77 @@ function SudokuGame(){
     this.redoMove = function(move){
         fSilent = true;
         console.log('plug', 'redoMove', move);
-        if (move.type==_SWITCHHELP){
-            that.changeShowCandidates(move.newn);
-        } else {
-            fAnim = true;
-            leaveDiv(getDiv(oldci,oldcj));
-            oldci = move.ci;
-            oldcj = move.cj;
-            prevCell = sudoku.cell(move.ci,move.cj);
-            if (move.type==_MOVE)sudoku.setCell(move.ci, move.cj, move.newn);
-            if (move.type==_CANDIDATE)sudoku.setCellCandidate(move.ci,move.cj,move.newn,fAutoCandidates);
-            fAnim = false;
-            enterDiv(getDiv(move.ci, move.cj),false);
+        switch (move.type){
+            case _SWITCHHELP:
+                that.changeShowCandidates(move.newn);
+                break;
+            case _MARKCELL:
+                if (move.newn>0) marks.addMark(sudoku.cell(move.ci,move.cj));
+                else marks.removeMark(sudoku.cell(move.ci,move.cj));
+                break;
+            case _CANDIDATE:
+                fAnim = true;
+                leaveDiv(getDiv(oldci,oldcj));
+                oldci = move.ci; oldcj = move.cj;
+                prevCell = sudoku.cell(move.ci,move.cj);
+                sudoku.setCellCandidate(move.ci,move.cj,move.newn,fAutoCandidates);
+                fAnim = false;
+                enterDiv(getDiv(move.ci, move.cj),false);
+                break;
+            case _MOVE:
+                fAnim = true;
+                leaveDiv(getDiv(oldci,oldcj));
+                oldci = move.ci; oldcj = move.cj;
+                prevCell = sudoku.cell(move.ci,move.cj);
+                sudoku.setCell(move.ci, move.cj, move.newn);
+                fAnim = false;
+                enterDiv(getDiv(move.ci, move.cj),false);
+                break;
         }
         fSilent = false;
         updated();
+    };
+
+    this.doHistory = function(history){
+        console.log('plug', 'doHistory');
+        fSilent = true;
+        var move;
+        for (var i=0; i < history.length; i++){
+            move = history[i];
+            switch (move.type){
+                case _SWITCHHELP:
+                    that.changeShowCandidates(move.newn);
+                    break;
+                case _MARKCELL:
+                    if (move.newn>0) marks.addMark(sudoku.cell(move.ci,move.cj));
+                    else marks.removeMark(sudoku.cell(move.ci,move.cj));
+                    break;
+                case _CANDIDATE:
+                    oldci = move.ci; oldcj = move.cj;
+                    prevCell = sudoku.cell(move.ci,move.cj);
+                    sudoku.setCellCandidate(move.ci,move.cj,move.newn,fAutoCandidates);
+                    break;
+                case _MOVE:
+                    oldci = move.ci; oldcj = move.cj;
+                    prevCell = sudoku.cell(move.ci,move.cj);
+                    sudoku.setCell(move.ci, move.cj, move.newn);
+                    break;
+            }
+            saveMove(move.type, move.ci, move.cj, move.oldn, move.newn);
+        }
+        fSilent = false;
+        updated();
+        showDesc();
+        fStartGame = false;
+    };
+
+    this.changeShowCandidates = function(f){
+        if (!fSilent) saveMove(_SWITCHHELP,0,0,fAutoCandidates?1:0,f?1:0);
+        fAutoCandidates = f;
+        if (fActive && !fComplete){
+            showCandidates(null);
+            showDesc()
+        }
     };
 
     this.setSuperMove = function(f){
@@ -147,40 +219,11 @@ function SudokuGame(){
         return fAutoCheck;
     };
 
-
-    this.doHistory = function(history){
-        console.log('plug', 'doHistory');
-        fSilent = true;
-        for (var i=0; i < history.length; i++){
-            if (history[i].type==_SWITCHHELP){
-                that.changeShowCandidates(history[i].newn);
-            } else {
-                oldci = history[i].ci; oldcj = history[i].cj;
-                prevCell = sudoku.cell(history[i].ci,history[i].cj);
-                if (history[i].type==_MOVE) sudoku.setCell(history[i].ci,history[i].cj,history[i].newn);
-                if (history[i].type==_CANDIDATE)sudoku.setCellCandidate(history[i].ci,history[i].cj,history[i].newn,fAutoCandidates);
-            }
-            saveMove(history[i].type, history[i].ci, history[i].cj, history[i].oldn, history[i].newn);
-        }
-        fSilent = false;
-        updated();
-        showDesc();
-    };
-
-    this.changeShowCandidates = function(f){
-        if (!fSilent) saveMove(_SWITCHHELP,0,0,fAutoCandidates?1:0,f?1:0);
-        fAutoCandidates = f;
-        if (fActive && !fComplete){
-            showCandidates(null);
-            showDesc()
-        }
-    };
-
     this.updateDesc = function() { showDesc(); };
 
     this.gameBegin = function(_fAutoCandidates){
-        console.log('plug', 'gameBegin',_fAutoCandidates);
-        that.changeShowCandidates(_fAutoCandidates);
+        console.log('plug', 'gameBegin',_fAutoCandidates, fAutoCandidates, fStartGame);
+        if (fStartGame || _fAutoCandidates != fAutoCandidates )that.changeShowCandidates(_fAutoCandidates);
     };
 
     function saveMove(type,ci,cj,oldn,newn){
@@ -209,6 +252,7 @@ function SudokuGame(){
         prevCell = null;
         mistakeCell = null;
         that._helper = new SudokuHelper(sudoku);
+        fStartGame = true;
     }
 
     function updated(){
@@ -275,7 +319,7 @@ function SudokuGame(){
         });
 
         $('#markCell').click(function(){
-
+            marks.switchMarking(!marks.isMarking());
         });
 
         $(document).keydown(function(e){
@@ -329,6 +373,7 @@ function SudokuGame(){
                 case 27: //ESC
                     fFixed = false;
                     if (oldci!=null&&oldcj!=null)leaveDiv(getDiv(oldci,oldcj));
+                    marks.switchMarking(false);
                     break;
                 case 46: //dell
                     if (oldci!=null&&oldcj!=null)sudoku.setCell(oldci,oldcj,0);
@@ -350,11 +395,25 @@ function SudokuGame(){
             }
             oldci = ci; oldcj = cj;
         }
+        var cell = sudoku.cell(oldci,oldcj);
+        // check user mode supermove
         if (fSuperMove){
-            that.gc.doSuperMove(that.gc.gm.superMove(sudoku.cell(oldci,oldcj)));
+            if (marks.isMarked(cell)) marks.removeMark(cell);
+            that.gc.doSuperMove(that.gc.gm.superMove(cell));
             fSuperMove = false;
             return false;
         }
+        // check mode user marking cells
+        if (marks.isMarking()){
+            if (cell.value>0){
+                if (marks.isMarked(cell)){
+                    marks.removeMark(cell);
+                } else marks.addMark(cell);
+                marks.switchMarking(false);
+            }
+            return;
+        }
+        // clear cell, show candidates, highlight
         fFixed = (!fShowButtons && clickPrior==1);
         enterDiv(getDiv(oldci,oldcj),true);
         if (!fShowButtons && clickPrior==2 && prevButton!=null){
@@ -391,6 +450,7 @@ function SudokuGame(){
             sudoku.setCell(i,j,0);
             updated();
             fFreeDiv=false;
+            if (marks.isMarked(sudoku.cell(i,j))) marks.removeMark(sudoku.cell(i,j));
         }
         if (!fShowButtons) return;
         divSetHtml(div, genTableButtons(i,j), 1);
@@ -593,32 +653,57 @@ function SudokuGame(){
 
     var marks = (function(){
         var fIsMarking = false;
+        var markmap = {};
         var markedCells = [];
+        var _max = 3;
 
         function updateMarks(){
+            var marks = [];
+            for (var i in markedCells){
+                if (!markedCells[i] || !markmap[markedCells[i].getId()]){}
+                else marks.push(markedCells[i]);
+            }
+            markedCells = marks;
             for (var i=0; i<markedCells.length; i++){
-                $('#mark'+markedCells[i].i,markedCells[i].j).html('!'+(i+1));
+                var marks = "";
+                for (var j=0; j<=i; j++) marks+='!';
+                $('#mark'+markedCells[i].i+markedCells[i].j).html(marks);
             }
         }
 
         return {
 
-            switchMarking : function(f){
+            switchMarking : function(f){ // switch on|off user marking cells mode;
                 fIsMarking = f;
+                if (f){
+                    $('#markCell').addClass('cellDivTextHighlight');
+                } else {
+                    $('#markCell').removeClass('cellDivTextHighlight');
+                }
             },
 
             isMarking : function(){ return fIsMarking; },
 
             addMark : function(cell){
-
+                if (cell.value==0 || markmap[cell.getId()]) return;
+                if (!fSilent) saveMove(_MARKCELL,cell.i,cell.j,0,1);
+                if (markedCells.length<_max) markedCells.push(cell);
+                $(getDiv(cell.i,cell.j)).parent().append('<span id="mark'+cell.i+cell.j+'" class="cellMark"></span>');
+                markmap[cell.getId()] = true;
+                updateMarks();
             },
 
             removeMark : function(cell){
-
+                if (!markmap[cell.getId()]) return;
+                if (!fSilent) saveMove(_MARKCELL,cell.i,cell.j,1,0);
+                markmap[cell.getId()] = null;
+                $('#mark'+cell.i+cell.j).remove();
+                updateMarks();
             },
 
             isMarked : function(cell){
                 if (markedCells.length==0) return false;
+                return (!!markmap[cell.getId()]);
             }
         }
     }());

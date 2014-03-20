@@ -145,7 +145,7 @@ function SudokuGameManager(_gameId, _encodedGameData, _attempts, _gameInfo, _ser
         for (var i = hs.length-1; i>0;i--){
             var move = hs[i];
             that.undo();
-            if (move.ci == cell.i && move.cj == cell.j){
+            if (move.ci == cell.i && move.cj == cell.j && move.type == _MOVE){
                 ind = i;
                 break;
             }

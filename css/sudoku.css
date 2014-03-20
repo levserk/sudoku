@@ -96,15 +96,12 @@ body{
 .cwrong{
     color: #ff1015;
     border-color: #ff1015;
-    font-family: 'Comic Sans MS', cursive;
 }
 .cright{
     color: #0B8310;
-    font-family: 'Comic Sans MS', cursive;
 }
 .cuser{
     color: #1320bb;
-    font-family: 'Comic Sans MS', cursive;
 }
 .cprev{
     font-weight: bold;
@@ -126,6 +123,10 @@ body{
     width: 100%;
     border-spacing: 2px;
     table-layout: fixed;
+}
+
+.mouseHand{
+    cursor: pointer;
 }
 
 .bottomButton {
@@ -190,9 +191,9 @@ body{
     font-weight: bold;
     font-size: 8pt;
     position: absolute;
-    right: 10px;
+    right: 16px;
     display: none;
-    bottom: 25px;
+    bottom: 40px;
 }
 
 #numberCounter{
@@ -215,4 +216,12 @@ right: 18px;
 bottom: 37px;
 cursor: pointer;
 text-decoration: underline;
+}
+
+.cellMark{
+    font-size: 15px;
+    color: #382D2D;
+    float: right;
+    margin-top: -17px;
+    padding-right: 2px;
 }
