@@ -73,16 +73,16 @@ body{
     color: #000000 !important;
 }
 .cellDiv{
-    width: 52px;
+    width: 53px;
     height: 52px;
     margin: 0 auto;
     display: table;
     text-align: center;
-    border: 2px solid rgba(255, 255, 255, 0);
+    border: 1px solid rgba(255, 255, 255, 0);
 }
 .cellDivHover{
-    box-shadow: 0px 0px 10px rgba(223, 151, 24, 1), 0px 0px 8px rgb(255, 163, 0);
-    border: 2px solid rgba(232, 135, 16, 0.55);
+    box-shadow: 0px 0px 8px rgba(223, 151, 24, 1), 0px 0px 6px rgb(255, 163, 0);
+    border: 1px solid rgba(232, 135, 16, 0.55);
 }
 
 .cellDivTextHighlight{
@@ -96,6 +96,14 @@ body{
 .cwrong{
     color: #ff1015;
     border-color: #ff1015;
+}
+.ccandidate{
+    box-shadow: 0px 0px 8px rgb(36, 30, 223), 0px 0px 6px rgb(93, 99, 255);
+    border-color: #1320bb;
+}
+.csingle{
+    box-shadow: 0px 0px 8px rgba(223, 151, 24, 1), 0px 0px 6px rgb(255, 163, 0);
+    border-color: rgba(232, 135, 16, 0.55);
 }
 .cright{
     color: #0B8310;
