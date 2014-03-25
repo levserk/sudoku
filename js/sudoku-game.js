@@ -121,6 +121,9 @@ function SudokuGame(){
                     case 6:// naked triple
                         showHelp(clue.cell,'ccandidate');
                         break;
+                    case 7:// naked triple
+                        showHelp(clue.cell,'ccandidate');
+                        break;
                 }
             }
         }
@@ -1149,6 +1152,16 @@ function SudokuHelper(_sudoku){
                     }
                 }
                 break;
+            case _HIDDENTRPLE:
+                var triple = isHiddenTriple(clue.cells[0],true)||isHiddenTriple(clue.cells[1],true)||isHiddenTriple(clue.cells[2],true);
+                if (triple){
+                    clue = {
+                        cell:triple.cell,
+                        cells:triple.cells,
+                        type:_HIDDENTRPLE
+                    }
+                }
+                break;
         }
         return false;
     }
@@ -1157,11 +1170,12 @@ function SudokuHelper(_sudoku){
         grid = sudoku.grid();
         gridCandidates = [];
         if (findSingle()) return clue;          // here grid candidates filed
-        if (findNakedQuads()) return clue;
-        if (findHiddenPairs()) return clue;
         if (findHiddenSingle()) return clue;
         if (findNakedPair()) return clue;
         if (findNakedTriples()) return clue;
+        if (findNakedQuads()) return clue;
+        if (findHiddenPairs()) return clue;
+        if (findHiddenTriples()) return clue;
         return null;
     }
 
@@ -1468,7 +1482,7 @@ function SudokuHelper(_sudoku){
         }
     }
 
-    //------------  Hidden Pair  --------------
+    //------------  Hidden Pairs  --------------
 
     function findHiddenPairs(){
         var i, j, pair;
@@ -1546,10 +1560,105 @@ function SudokuHelper(_sudoku){
         }
     }
 
+    //------------  Hidden Triples  --------------
+
+    function findHiddenTriples(){
+        var i, j, triple;
+        for (i=0;i<sz;i++){
+            for (j=0;j<sz;j++){
+                triple = isHiddenTriple(grid[i][j],false);
+                if (triple) {
+                    clue = {
+                        type: _HIDDENTRPLE,
+                        cell: triple.cell,
+                        cells: triple.cells
+                    };
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function isHiddenTriple(cell,f){
+        var ci = cell.i, cj = cell.j;
+        if (f) getCandidates(ci,cj);
+        if (gridCandidates[ci][cj]!=0 && getIntOneBytes(gridCandidates[ci][cj])>3){
+            var triple;
+            triple = find(ci,ci,0,sz-1,[grid[ci][cj]], f);
+            if (triple) {
+                return triple;
+            }
+            triple = find(0,sz-1,cj,cj,[grid[ci][cj]], f);
+            if (triple) {
+                return triple;
+            }
+
+            var reg = sudoku.getRegion(ci,cj);
+            triple = find(reg.i1,reg.i2,reg.j1,reg.j2,[grid[ci][cj]], f);
+            if (triple) {
+                return triple;
+            }
+
+        }
+
+        return null;
+
+        function find(i1,i2,j1,j2,cells, f){ //f to update candidates
+            var c = cellsUnion(cells), i, j, result;
+            for (i=i1;i<=i2;i++){
+                for (j = j1; j<=j2; j++){
+                    if (f) getCandidates(i,j);
+                    if (gridCandidates[i][j]!=0 && $.inArray(grid[i][j],cells)==-1){
+                        if (getIntOneBytes(gridCandidates[i][j]|c) >= 3){
+                            cells.push(grid[i][j]);
+                            if (cells.length<3){
+                                result = find(i1,i2,j1,j2,cells,f);
+                                if (result) return result;
+                            } else  if (check(i1,i2,j1,j2,cells, f)){
+                                return {
+                                    cell:cells[0],
+                                    cells:cells
+                                };
+                            }
+                            cells.pop();
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        function check(i1,i2,j1,j2,cells, f){
+            var c =  cellsUnion(cells), i, j;
+            if (getIntOneBytes(c)<3) return false;
+            for (i=i1;i<=i2;i++){
+                for (j = j1; j<=j2; j++){
+                    if (gridCandidates[i][j]!=0 && $.inArray(grid[i][j],cells)==-1){
+                        if (f) getCandidates(i,j);
+                        c &= (c&~gridCandidates[i][j]);
+                        if (getIntOneBytes(c)<3) return false
+                    }
+                }
+            }
+            return getIntOneBytes(c)==3;
+        }
+    }
 
     function getCandidates(ci,cj){
         if (grid[ci][cj].value>0)  gridCandidates[ci][cj] = 0;
         else gridCandidates[ci][cj] = arrToByte(sudoku.getCellCandidates(grid[ci][cj],true));
+    }
+
+    function cellsUnion(cells){
+        switch (cells.length){
+            case 0: return 0;
+            case 1: return gridCandidates[cells[0].i][cells[0].j];
+            case 2: return gridCandidates[cells[0].i][cells[0].j]&gridCandidates[cells[1].i][cells[1].j];
+            case 3: return ((gridCandidates[cells[0].i][cells[0].j]&gridCandidates[cells[1].i][cells[1].j])|
+                            (gridCandidates[cells[1].i][cells[1].j]&gridCandidates[cells[2].i][cells[2].j])|
+                            (gridCandidates[cells[0].i][cells[0].j]&gridCandidates[cells[2].i][cells[2].j]));
+        }
     }
 
 }
