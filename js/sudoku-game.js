@@ -115,6 +115,12 @@ function SudokuGame(){
                     case 4:// naked triple
                         showHelp(clue.cell,'ccandidate');
                         break;
+                    case 5:// naked triple
+                        showHelp(clue.cell,'ccandidate');
+                        break;
+                    case 6:// naked triple
+                        showHelp(clue.cell,'ccandidate');
+                        break;
                 }
             }
         }
@@ -310,16 +316,20 @@ function SudokuGame(){
             }
         })
         .click(onDivClicked)
-        .mouseleave(function(){
-            if (!fActive || fFixed) return;
-            if (oldci!=null && oldcj!=null) leaveDiv(getDiv(oldci,oldcj));
-        })
         .bind('contextmenu', function(e){
             e.preventDefault();
             return false;
         });
 
+        $('body').mousemove(function(e){ // leave field
+           if(!div.is(':hover')){
+               if (!fActive || fFixed) return;
+               if (oldci!=null && oldcj!=null) leaveDiv(getDiv(oldci,oldcj));
+           }
+        });
+
         $('#filed').mouseleave(function(){
+            console.log('leave2')
             if (!fActive || fFixed) return;
             if (oldci!=null && oldcj!=null) leaveDiv(getDiv(oldci,oldcj));
         });
@@ -1057,7 +1067,8 @@ function Cell(val,i,j){
 
 
 function SudokuHelper(_sudoku){
-    var _MISTAKE= 0, _SINGLE = 1, _HIDDENSINGLE = 2, _NAKEDPAIR = 3, _NAKEDTRIPLE = 4;
+    var _MISTAKE= 0, _SINGLE = 1, _HIDDENSINGLE = 2, _NAKEDPAIR = 3, _NAKEDTRIPLE = 4, _NAKEDQUAD = 5;
+    var _HIDDENPAIR = 6, _HIDDENTRPLE = 7;
     var sudoku = _sudoku;
     var clue = null;
     var gridCandidates;
@@ -1108,13 +1119,34 @@ function SudokuHelper(_sudoku){
                 break;
             case _NAKEDTRIPLE:
                 var triple = isNakedTriple(clue.triple[0].i,clue.triple[0].j, true);
-                if (pair) {
+                if (triple) {
                     clue = {
                         cell : triple.cell,
                         triple : triple.cells,
                         type: _NAKEDTRIPLE
                     };
                     return true;
+                }
+                break;
+            case _NAKEDQUAD:
+                var quad = isNakedQuad(clue.quad[0].i,clue.quad[0].j, true);
+                if (quad) {
+                    clue = {
+                        cell : quad.cell,
+                        quad : quad.cells,
+                        type: _NAKEDQUAD
+                    };
+                    return true;
+                }
+                break;
+            case _HIDDENPAIR:
+                var pair = isHiddenPair(clue.cell.i,clue.cell.j,true)||isHiddenPair(clue.pair.i,clue.pair.j,true);
+                if (pair){
+                    clue = {
+                        cell:pair.cell,
+                        pair:pair.pair,
+                        type:_HIDDENPAIR
+                    }
                 }
                 break;
         }
@@ -1125,6 +1157,8 @@ function SudokuHelper(_sudoku){
         grid = sudoku.grid();
         gridCandidates = [];
         if (findSingle()) return clue;          // here grid candidates filed
+        if (findNakedQuads()) return clue;
+        if (findHiddenPairs()) return clue;
         if (findHiddenSingle()) return clue;
         if (findNakedPair()) return clue;
         if (findNakedTriples()) return clue;
@@ -1347,6 +1381,171 @@ function SudokuHelper(_sudoku){
             return null;
         }
     }
+
+    //------------  Naked Quads  --------------
+
+    function findNakedQuads(){
+        var i, j, quad;
+        for (i=0;i<sz;i+=3){
+            for (j=0;j<sz;j+=3){
+                quad = isNakedQuad(i,j,false);
+                if (quad) {
+                    clue = {
+                        type: _NAKEDQUAD,
+                        cell: quad.cell,
+                        quad: quad.cells
+                    };
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function isNakedQuad(ci,cj, f){
+        if (f) getCandidates(ci,cj);
+        //if (gridCandidates[ci][cj]!=0 && getIntOneBytes(gridCandidates[ci][cj])<=3){
+            var quad;
+
+            var reg = sudoku.getRegion(ci,cj), count = 0;
+            for (var i=reg.i1;i<=reg.i2;i++){
+                for (var j = reg.j1; j<=reg.j2; j++){
+                    if (f) getCandidates(i,j);
+                    if (gridCandidates[i][j]!=0) count++
+                }
+            }
+            if (count>4)quad = find(reg.i1,reg.i2,reg.j1,reg.j2,[]);
+            if (quad) {
+                quad.quad = grid[ci][cj];
+                return quad;
+            }
+
+       // }
+
+        return null;
+
+        function find(i1,i2,j1,j2,cells){
+            var c = 0, i, j,result, cell;
+            for (i = 0; i<cells.length; i++) c |= gridCandidates[cells[i].i][cells[i].j];
+            for (i=i1;i<=i2;i++){
+                for (j = j1; j<=j2; j++){
+                    if (f) getCandidates(i,j);
+                    if (gridCandidates[i][j]!=0 && $.inArray(grid[i][j],cells)==-1){
+                        if (getIntOneBytes(gridCandidates[i][j]|c)<=4){
+                            cells.push(grid[i][j]);
+                            if (cells.length<4) {
+                                result = find(i1,i2,j1,j2,cells);
+                                if (result) return result;
+                            }
+                            else {
+                                cell = findCell(i1,i2,j1,j2,cells);
+                                if (cell){
+                                    return {
+                                        cell:cell,
+                                        cells:cells
+                                    };
+                                }
+                            }
+                            cells.pop();
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        function findCell(i1,i2,j1,j2,cells){
+            var c = 0, i,j;
+            for (i = 0; i<cells.length; i++) c |= gridCandidates[cells[i].i][cells[i].j];
+            for (i=i1;i<=i2;i++){
+                for (j = j1; j<=j2; j++){
+                    if (gridCandidates[i][j]!=0 && $.inArray(grid[i][j],cells)==-1){
+                        if ((gridCandidates[i][j]&c)>0) return grid[i][j];
+                    }
+                }
+            }
+            return null;
+        }
+    }
+
+    //------------  Hidden Pair  --------------
+
+    function findHiddenPairs(){
+        var i, j, pair;
+        for (i=0;i<sz;i++){
+            for (j=0;j<sz;j++){
+                pair = isHiddenPair(i,j,false);
+                if (pair) {
+                    clue = {
+                        type: _HIDDENPAIR,
+                        cell: pair.cell,
+                        pair: pair.pair
+                    };
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function isHiddenPair(ci,cj,f){
+        if (f) getCandidates(ci,cj);
+        if (gridCandidates[ci][cj]!=0 && getIntOneBytes(gridCandidates[ci][cj])>2){
+            var pair;
+            pair = find(ci,ci,0,sz-1,ci,cj, f);
+            if (pair) {
+                return pair;
+            }
+            pair = find(0,sz-1,cj,cj,ci,cj, f);
+            if (pair) {
+                return pair;
+            }
+
+            var reg = sudoku.getRegion(ci,cj);
+            pair = find(reg.i1,reg.i2,reg.j1,reg.j2,ci,cj, f);
+            if (pair) {
+                return pair;
+            }
+
+        }
+
+        return null;
+
+        function find(i1,i2,j1,j2,ci,cj, f){ //f to update candidates
+            var c = gridCandidates[ci][cj];
+            for (var i=i1;i<=i2;i++){
+                for (var j = j1; j<=j2; j++){
+                    if (f) getCandidates(i,j);
+                    if (i!=ci || j!= cj && gridCandidates[i][j]!=0){
+                        if (getIntOneBytes(gridCandidates[i][j]&c) >= 2){
+                            if (check(i1,i2,j1,j2,ci,cj, grid[i][j], f)){
+                                    return {
+                                        cell:grid[ci][cj],
+                                        pair:grid[i][j]
+                                    };
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        function check(i1,i2,j1,j2,ci,cj, pair, f){
+            var c = (gridCandidates[ci][cj]&gridCandidates[pair.i][pair.j]);
+            for (var i=i1;i<=i2;i++){
+                for (var j = j1; j<=j2; j++){
+                    if ((i!=ci || j!=cj) && (i!=pair.i || j!=pair.j) && gridCandidates[i][j]!=0){
+                        if (f) getCandidates(i,j);
+                        c &= (c&~gridCandidates[i][j]);
+                        if (getIntOneBytes(c)<2) return false
+                    }
+                }
+            }
+            return getIntOneBytes(c)==2;
+        }
+    }
+
 
     function getCandidates(ci,cj){
         if (grid[ci][cj].value>0)  gridCandidates[ci][cj] = 0;
