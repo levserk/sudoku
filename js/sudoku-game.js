@@ -97,7 +97,7 @@ function SudokuGame(){
         } else { // show
             $('#tbHelp').addClass('cpHighlight');
             var clue = that._helper.getHelp();
-            console.log('help', clue);
+            console.log('help',(clue?clue.type:'no clue'), clue);
             if (clue && clue.cell){
                 switch (clue.type){
                     case 0: //  mistake
@@ -124,8 +124,14 @@ function SudokuGame(){
                     case 7:// naked triple
                         showHelp(clue.cell,'ccandidate');
                         break;
+                    case 8:// naked triple
+                        showHelp(clue.cell,'ccandidate');
+                        break;
+                    case 9:// naked triple
+                        showHelp(clue.cell,'ccandidate');
+                        break;
                 }
-            }
+            } else hideHelp();
         }
 
         function showHelp(cell, cssClass){
@@ -712,9 +718,7 @@ function SudokuGame(){
             }
             markedCells = marks;
             for (var i=0; i<markedCells.length; i++){
-                var marks = "";
-                for (var j=0; j<=i; j++) marks+='!';
-                $('#mark'+markedCells[i].i+markedCells[i].j).html(marks);
+                $('#mark'+markedCells[i].i+markedCells[i].j).html('<img src="img/line'+(i+1)+'.png">');
             }
         }
 
@@ -1071,7 +1075,7 @@ function Cell(val,i,j){
 
 function SudokuHelper(_sudoku){
     var _MISTAKE= 0, _SINGLE = 1, _HIDDENSINGLE = 2, _NAKEDPAIR = 3, _NAKEDTRIPLE = 4, _NAKEDQUAD = 5;
-    var _HIDDENPAIR = 6, _HIDDENTRPLE = 7;
+    var _HIDDENPAIR = 6, _HIDDENTRPLE = 7, _POINTINGLINE = 8, _BOXLINE = 9;
     var sudoku = _sudoku;
     var clue = null;
     var gridCandidates;
@@ -1150,6 +1154,7 @@ function SudokuHelper(_sudoku){
                         pair:pair.pair,
                         type:_HIDDENPAIR
                     }
+                    return true;
                 }
                 break;
             case _HIDDENTRPLE:
@@ -1160,6 +1165,21 @@ function SudokuHelper(_sudoku){
                         cells:triple.cells,
                         type:_HIDDENTRPLE
                     }
+                    return true;
+                }
+                break;
+            case _POINTINGLINE:
+                var line = isPointingLine(clue.i1,clue.i2,clue.j1,clue.j2, true);
+                if (line){
+                    clue = line; clue.type = _POINTINGLINE;
+                    return true;
+                }
+                break;
+            case _BOXLINE:
+                var line = isBoxLine(clue.i1,clue.i2,clue.j1,clue.j2, true);
+                if (line){
+                    clue = line; clue.type = _BOXLINE;
+                    return true;
                 }
                 break;
         }
@@ -1176,6 +1196,8 @@ function SudokuHelper(_sudoku){
         if (findNakedQuads()) return clue;
         if (findHiddenPairs()) return clue;
         if (findHiddenTriples()) return clue;
+        if (findPointingLines()) return clue;
+        if (findBoxLines()) return clue;
         return null;
     }
 
@@ -1645,6 +1667,138 @@ function SudokuHelper(_sudoku){
         }
     }
 
+    //------------  Pointing Lines  --------------
+
+    function findPointingLines(){
+        var i, j, i1, j1, line, reg;
+        for (i=0;i<sz;i+=3){
+            for (j=0;j<sz;j+=3){
+                reg = sudoku.getRegion(i,j);
+                for (i1=reg.i1; i1<=reg.i2; i1++){
+                    line = isPointingLine(i1,i1,reg.j1,reg.j2);
+                    if (line) {
+                        clue = line;  clue.type = _POINTINGLINE;
+                        return true;
+                    }
+                }
+                for (j1=reg.j1; j1<=reg.j2; j1++){
+                    line = isPointingLine(reg.i1,reg.i2,j1,j1);
+                    if (line) {
+                        clue = line;  clue.type = _POINTINGLINE;
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    function isPointingLine(i1,i2,j1,j2, f){
+        var reg = sudoku.getRegion(i1,j1), c = getLineUnion(i1,i2,j1,j2), i,j;
+        if (c===0) return null;
+        for (i=reg.i1; i<=reg.i2; i++){
+            for (j=reg.j1; j<=reg.j2; j++){
+                if (i>i2||i<i1||j>j2||j<j1){
+                    if (f) getCandidates(i,j);
+                    c&=~gridCandidates[i][j];
+                }
+            }
+        }
+
+        if (c!=0) {
+            i=0;j=0;
+            if (i1==i2) i=i1; else j=j1;
+            while(i<sz&&j<sz){
+                if (i>i2||i<i1||j>j2||j<j1){
+                    if (f) getCandidates(i,j);
+                    if ((gridCandidates[i][j]&c)!=0){
+                        return{
+                            cell:grid[i][j],
+                            i1:i1,i2:i2,j1:j1,j2:j2
+                        }
+                    }
+                }
+                if (i1==i2) j++;  else i++;
+            }
+        }
+        return null;
+
+        function getLineUnion(i1,i2,j1,j2){
+            var c=0;
+            for (var i = i1; i<=i2; i++){
+                for (var j = j1; j<=j2; j++){
+                    if (f) getCandidates(i,j);
+                   c |= gridCandidates[i][j];
+                }
+            }
+            return c;
+        }
+    }
+
+    //------------  Box Lines  --------------
+
+    function findBoxLines(){
+        var i, j, i1, j1, line, reg;
+        for (i=0;i<sz;i+=3){
+            for (j=0;j<sz;j+=3){
+                reg = sudoku.getRegion(i,j);
+                for (i1=reg.i1; i1<=reg.i2; i1++){
+                    line = isBoxLine(i1,i1,reg.j1,reg.j2);
+                    if (line) {
+                        clue = line;  clue.type = _BOXLINE;
+                        return true;
+                    }
+                }
+                for (j1=reg.j1; j1<=reg.j2; j1++){
+                    line = isBoxLine(reg.i1,reg.i2,j1,j1);
+                    if (line) {
+                        clue = line;  clue.type = _BOXLINE;
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    function isBoxLine(i1,i2,j1,j2, f){
+        var reg = sudoku.getRegion(i1,j1), c = getLineUnion(i1,i2,j1,j2), i,j;
+        if (c===0) return null;
+        i=0;j=0;
+        if (i1==i2) i=i1; else j=j1;
+        while(i<sz&&j<sz){
+            if (i>i2||i<i1||j>j2||j<j1){
+                if (f) getCandidates(i,j);
+                c &= ~gridCandidates[i][j];
+            }
+            if (i1==i2) j++; else i++;
+        }
+        if (c===0) return null;
+        for (i=reg.i1; i<=reg.i2; i++){
+            for (j=reg.j1; j<=reg.j2; j++){
+                if (i>i2||i<i1||j>j2||j<j1){
+                    if (f) getCandidates(i,j);
+                    if ((gridCandidates[i][j]&c)!=0){
+                        return{
+                            cell:grid[i][j],
+                            i1:i1,i2:i2,j1:j1,j2:j2
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+
+        function getLineUnion(i1,i2,j1,j2){
+            var c=0;
+            for (var i = i1; i<=i2; i++){
+                for (var j = j1; j<=j2; j++){
+                    if (f) getCandidates(i,j);
+                    c |= gridCandidates[i][j];
+                }
+            }
+            return c;
+        }
+    }
+
     function getCandidates(ci,cj){
         if (grid[ci][cj].value>0)  gridCandidates[ci][cj] = 0;
         else gridCandidates[ci][cj] = arrToByte(sudoku.getCellCandidates(grid[ci][cj],true));
@@ -1659,6 +1813,7 @@ function SudokuHelper(_sudoku){
                             (gridCandidates[cells[1].i][cells[1].j]&gridCandidates[cells[2].i][cells[2].j])|
                             (gridCandidates[cells[0].i][cells[0].j]&gridCandidates[cells[2].i][cells[2].j]));
         }
+        return 0;
     }
 
 }
