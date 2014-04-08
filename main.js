@@ -3,6 +3,8 @@ window.onload = function(){
     max = 999999999;
     file = "pzl/pzl_26.csv";
 
+    var solver = new Solver('510000000200004000000700006600039104000000000030060002400900027090000050078006090');
+
     document.getElementById('btn2').onclick = function(){
         var lines;
         var output = document.getElementById('output');

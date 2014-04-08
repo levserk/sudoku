@@ -38,6 +38,8 @@ function GameController(_cs, _serializer) {
 
     var fFindTurns = true, fSuperMove = false, fCancelSuperMove=false;
 
+    var freegame = false;
+
     that.gameURL = "/sudoku";
 
     this.getHigherGameIdBound = function(){
@@ -117,7 +119,7 @@ function GameController(_cs, _serializer) {
                         that.game.init(gameId, deck);
                         that.game.gm = that.gm;
                         that.gm.g = that.game;
-                        that.gm.gameInfo.label = that.game.numClues();
+                        that.gm.gameInfo.label = that.game.getLabel();
 
                         if (attempts.length == 0) {
                             that.gm.replay();
@@ -283,7 +285,33 @@ function GameController(_cs, _serializer) {
         });
 
         $('#tbHelp').click(function (){
-            that.game.help()
+            if (fSuperMove) that.doSuperMove();
+            that.game.help();
+        });
+
+        $('#tbNormalGame').click(function (){
+            if (that.isGameActive() && (that.isGameValueless()) || true) {
+                if (freegame){ // goto normal
+                    freegame = false;
+                    $('#tbNormalGame').addClass('cpHighlight');
+                    $('#tbFreeGame').removeClass('cpHighlight');
+                    that.startNextGame();
+                    $('#gameStatePanel').show();
+                    $('#attemptsPanel').show();
+                }
+            }
+        });
+        $('#tbFreeGame').click(function (){
+            if (that.isGameActive() && (that.isGameValueless()) || true) {
+                if (!freegame){ // goto free
+                    freegame = true;
+                    $('#tbFreeGame').addClass('cpHighlight');
+                    $('#tbNormalGame').removeClass('cpHighlight');
+                    that.startNextGame();
+                    $('#gameStatePanel').hide();
+                    $('#attemptsPanel').hide();
+                }
+            }
         });
 
         $('#markCell').click(function (){
@@ -534,6 +562,10 @@ function GameController(_cs, _serializer) {
         if (that.hasPrevious()) {
             that.requestGame(that.previous(), -1, undefined, BEGIN_NEW_ATTEMPT);
         }
+    }
+
+    this.gameType = function() {
+        return freegame;
     }
 
     cs = _cs;

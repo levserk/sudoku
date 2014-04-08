@@ -1,7 +1,5 @@
-var _MOVE = 1;
-var _CANDIDATE = 2;
-var _SWITCHHELP = 3;
-var _MARKCELL = 4;
+var _MOVE = 1, _CANDIDATE = 2, _SWITCHHELP = 3, _MARKCELL = 4, _GETHELP = 5;
+
 function SudokuGame(){
     var that=this;
     var oldci=null, oldcj=null, prevButton;
@@ -13,6 +11,7 @@ function SudokuGame(){
     var colors = ['#DFDFDF', '#E2E3FC', '#E8FDE7','#E7F9FD', '#FCF0ED', '#F6FAE5'];
     var clID=0;
     var fMistake = false, prevCell, mistakeCell = null, helpCell;
+    var helpCount;
 
     var div =  $('#divTable');
     div.html(genTable());
@@ -32,7 +31,7 @@ function SudokuGame(){
         if (fSilent) return;
         console.log('Well done!');
         console.log(sudoku.toString());
-        that.gm.gameIsWon();
+        if (!that.gc.gameType())that.gm.gameIsWon();
     });
 
     bindEvents();
@@ -63,17 +62,25 @@ function SudokuGame(){
         console.log('plug', 'init', gameId);
         fComplete = false; fActive = false;
         sudoku.loadPuzzle(deck, 9);
+        this.gameId = gameId;
         if (oldci!=null && oldcj!=null) {
             leaveDiv(getDiv(oldci,oldcj));
             oldci=null; oldcj=null;
         }
+        helpCount = 0;
     };
 
     this.replay = function(){
         console.log('plug', 'replay');
     };
 
-    this.numClues = function(){return sudoku.clues()};
+    this.getLabel = function(){
+        var label=sudoku.clues()+'/';
+        if (that.gameId<5001) return label+'легк.';
+        if (that.gameId<20001) return label+'сред.';
+        if (that.gameId<30001) return label+'слож.';
+        return sudoku.clues()
+    };
 
     this.setupNewGame = function(){
         console.log('plug', 'setupNewGame');
@@ -95,43 +102,63 @@ function SudokuGame(){
         if (helpCell){ // hide
             hideHelp();
         } else { // show
+            if (!that.gc.gameType() && helpCount>=2){
+                $('#gameMessage').html('В обычной игре доступно только 2 подсказки').fadeIn(100);
+                return;
+            }
             $('#tbHelp').addClass('cpHighlight');
             var clue = that._helper.getHelp();
             console.log('help',(clue?clue.type:'no clue'), clue);
+
             if (clue && clue.cell){
+                saveMove(_GETHELP,clue.cell.i,clue.cell.j,clue.type,clue.type);
+                helpCount++;
                 switch (clue.type){
                     case 0: //  mistake
                         showHelp(clue.cell, 'cwrong');
+                        $('#gameMessage').html('Ошибка! Используйте спецход на этой цифре').fadeIn(100);
                         break;
                     case 1: // single
+                        $('#gameMessage').html('Одиночка. Поставте цифру').fadeIn(100);
                         showHelp(clue.cell,'csingle');
                         break;
                     case 2: // hidden single
+                        $('#gameMessage').html('Скрытая одиночка. Поставте цифру').fadeIn(100);
                         showHelp(clue.cell,'csingle');
                         break;
                     case 3: // naked pairs
-                        showHelp(clue.cell,'ccandidate');
+                        $('#gameMessage').html('Пара. Удалите правой кнопкой лишние варианты').fadeIn(100);
+                        showHelp(clue.cell,'csingle');
                         break;
                     case 4:// naked triple
-                        showHelp(clue.cell,'ccandidate');
+                        $('#gameMessage').html('Тройка. Удалите правой кнопкой лишние варианты').fadeIn(100);
+                        showHelp(clue.cell,'csingle');
                         break;
-                    case 5:// naked triple
-                        showHelp(clue.cell,'ccandidate');
+                    case 5:// naked quard
+                        $('#gameMessage').html('Четверка. Удалите правой кнопкой лишние варианты').fadeIn(100);
+                        showHelp(clue.cell,'csingle');
                         break;
-                    case 6:// naked triple
-                        showHelp(clue.cell,'ccandidate');
+                    case 6:// hidden pair
+                        $('#gameMessage').html('Скрытая пара. Удалите правой кнопкой лишние варианты').fadeIn(100);
+                        showHelp(clue.cell,'csingle');
                         break;
-                    case 7:// naked triple
-                        showHelp(clue.cell,'ccandidate');
+                    case 7:// hidden triple
+                        $('#gameMessage').html('Скрытая тройка. Удалите правой кнопкой лишние варианты').fadeIn(100);
+                        showHelp(clue.cell,'csingle');
                         break;
-                    case 8:// naked triple
-                        showHelp(clue.cell,'ccandidate');
+                    case 8:// pointing line
+                        $('#gameMessage').html('Указывающая Пара. Удалите правой кнопкой лишние варианты').fadeIn(100);
+                        showHelp(clue.cell,'csingle');
                         break;
-                    case 9:// naked triple
-                        showHelp(clue.cell,'ccandidate');
+                    case 9:// box line
+                        $('#gameMessage').html('Сокращение квадрата. Удалите правой кнопкой лишние варианты').fadeIn(100);
+                        showHelp(clue.cell,'csingle');
                         break;
                 }
-            } else hideHelp();
+            } else {
+                hideHelp();
+                $('#gameMessage').html('Воспользуйтесь методом "Развилка"').fadeIn(100);
+            }
         }
 
         function showHelp(cell, cssClass){
@@ -139,6 +166,7 @@ function SudokuGame(){
             getDiv(cell.i,cell.j).addClass(cssClass);
         }
     };
+
     this.undoMove = function(move){
         fSilent = true;
         console.log('plug', 'undoMove', move);
@@ -209,6 +237,7 @@ function SudokuGame(){
         console.log('plug', 'doHistory');
         fSilent = true;
         var move;
+        helpCount = 0;
         for (var i=0; i < history.length; i++){
             move = history[i];
             switch (move.type){
@@ -228,6 +257,9 @@ function SudokuGame(){
                     oldci = move.ci; oldcj = move.cj;
                     prevCell = sudoku.cell(move.ci,move.cj);
                     sudoku.setCell(move.ci, move.cj, move.newn);
+                    break;
+                case _GETHELP:
+                    helpCount++;
                     break;
             }
             saveMove(move.type, move.ci, move.cj, move.oldn, move.newn);
@@ -265,6 +297,7 @@ function SudokuGame(){
     };
 
     function saveMove(type,ci,cj,oldn,newn){
+        if (that.gc.gameType()) return;
         prevCell = sudoku.cell(ci,cj);
         //console.log('plug', 'savemove',type, ci,cj,oldn,newn);
         oldn = parseInt(oldn);
@@ -488,6 +521,7 @@ function SudokuGame(){
     function enterDiv(div, fShow){
         var i = parseInt(div.attr("i"));
         var j = parseInt(div.attr("j"));
+        if (sudoku.cell(i,j).default!=0) return;
         var fFreeDiv=true;
         div.addClass('cellDivHover');
         if (!sudoku.cellIsGiven(i,j) ||  (sudoku.value(i,j)!=0 && !fShow)) return;
@@ -688,6 +722,7 @@ function SudokuGame(){
     }
 
     function hideHelp(){
+        $('#gameMessage').fadeOut(100);
         if (helpCell) getDiv(helpCell.i, helpCell.j).removeClass('ccandidate').removeClass('cwrong').removeClass('csingle');
         helpCell = null;
         $('#tbHelp').removeClass('cpHighlight');
@@ -739,6 +774,7 @@ function SudokuGame(){
                 if (cell.value==0 || markmap[cell.getId()]) return;
                 if (!fSilent) saveMove(_MARKCELL,cell.i,cell.j,0,1);
                 if (markedCells.length<_max) markedCells.push(cell);
+                else $('#gameMessage').html('Не больше трех пометок. Удалите предыдущую').fadeIn(100);
                 $(getDiv(cell.i,cell.j)).parent().append('<span id="mark'+cell.i+cell.j+'" class="cellMark"></span>');
                 markmap[cell.getId()] = true;
                 updateMarks();
@@ -772,6 +808,7 @@ function Sudoku(onCellUpdate, onPuzzleComplete){
         str = str.split(':');
         size = gridSize;
         lineSize = 3; //Math.sqrt(size);
+        console.log(str)
         puzzle = str[0].split('.').join('0').split("").map(Number);
         answ = str[1].split('.').join('0').split("").map(Number);
         init();

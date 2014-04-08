@@ -1,5 +1,6 @@
 function Solver(strPuzzle) {
     var result={}, size, lineSize, puzzleArr;
+    var ones = 1;
 
     loadPuzzle(strPuzzle, 9);
 
@@ -7,6 +8,8 @@ function Solver(strPuzzle) {
         size = gridSize;
         lineSize = 3; //Math.sqrt(size);
         puzzleArr = str.split('.').join('0').split("").map(Number);
+        ones = Math.pow(2,size)-1;
+        SudokuS(puzzleArr)
     }
 
     function getRegion(ci,cj){
@@ -23,6 +26,7 @@ function Solver(strPuzzle) {
         var numFreeCells = 0;
         var error = false;
         init(puzzle);
+        solve();
 
         function init(puzzle){
             grid = [];
@@ -81,42 +85,44 @@ function Solver(strPuzzle) {
             if (ci==null||cj==null){
                 for (i=0;i<size;i++){
                     for (j=0; j<size; j++){
-                        sudoku[i][j].candidates = getCandidates();
+                        grid[i][j].candidates = getCandidates(i,j);
                     }
                 }
             } else {
                 for (i = 0 ; i < size; i++){
-                    sudoku[i][cj].candidates = getCandidates();
+                    grid[i][cj].candidates = getCandidates(i,cj);
                 }
                 for (j = 0 ; j < size; j++){
-                    sudoku[ci][j].candidates = getCandidates();
+                    grid[ci][j].candidates = getCandidates(ci,j);
                 }
                 var reg = getRegion(ci,cj);
                 for (i=reg.i1; i<=reg.i2; i++){
                     for (j=reg.j1; j<=reg.j2; j++){
-                        sudoku[i][j].candidates = getCandidates();
+                        grid[i][j].candidates = getCandidates(i,j);
                     }
                 }
             }
         }
 
         function getCandidates(ci,cj){
-            var candidates = [1,1,1,1,1,1,1,1,1], val= 0, i, j;
+            var candidates = ones, val= 0, i, j;
+            if (grid[ci][cj].value!=0) return;
             for (i = 0 ; i < size; i++){
                 val = grid[i][cj].value;
-                if (i!=ci && val!=0) candidates[val-1]=0;
+                if (i!=ci && val!=0) candidates&=~Math.pow(2,val);
             }
             for (j = 0 ; j < size; j++){
                 val = grid[ci][j].value;
-                if (j!=cj && val!=0) candidates[val-1]=0;
+                if (j!=cj && val!=0) candidates&=~Math.pow(2,val);
             }
             var reg = getRegion(ci,cj);
             for (i=reg.i1; i<=reg.i2; i++){
                 for (j=reg.j1; j<=reg.j2; j++){
                     val = grid[i][j].value;
-                    if (i!=ci && j!=cj && val!=0) candidates[val-1]=0;
+                    if (i!=ci && j!=cj && val!=0) candidates&=~Math.pow(2,val);
                 }
             }
+            console.log(candidates.toString(2));
             return candidates;
         }
 

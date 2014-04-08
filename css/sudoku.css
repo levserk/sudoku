@@ -63,7 +63,7 @@ body{
     cursor: default;
 }
 .tableButtonsTD:hover{
-    background-color: #ffeb94;
+    background-color: #ffffff;
 }
 .tableButtonsTDchousen{
     background-color: #ffeb94 !important;
@@ -235,4 +235,12 @@ text-decoration: underline;
 }
 .cellMark img{
     max-width: 100%;
+}
+
+#gameMessage{
+    color: #382D2D;
+    text-align: center;
+    margin: 0 auto;
+    width: 500px;
+    cursor: pointer;
 }

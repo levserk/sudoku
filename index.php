@@ -160,7 +160,13 @@ include '../snippets/fireworks.htm';
                     <td id="tbReplay" class="cpButton cpNormal nonSelectable">
                         <?=$i18n->get("topCP", "replay")?>
                     </td>
-                    <td id="tbSupermove" class="cpButton cpNormal nonSelectable">
+                    <td id="tbNormalGame" class="cpButton cpNormal nonSelectable cpHighlight" title="игра на рейтинг">
+                        Обычная игра
+                    </td>
+                    <td id="tbFreeGame" class="cpButton cpNormal nonSelectable" title="без рейтинга, с неограниченным числом подсказок">
+                        Тренировка
+                    </td>
+                    <td id="tbSupermove" class="cpButton cpNormal nonSelectable" title="перейти назад, на момент хода">
                         <?=$i18n->get("topCP", "specialMove")?>
                     </td>
                     <td id="tbHelp" class="cpButton cpNormal nonSelectable" style="padding: 5px;">Подсказка</td>
@@ -213,9 +219,10 @@ include '../snippets/fireworks.htm';
             <p id="infoFieldPanel">Выберите клетку или нажмите ESC для отмены.</p>
             <p id="numberCounter"></p>
             <div id="gameStatePanel" class="fieldInfoPanel"></div>
+            <div id="gameMessage" class="fieldInfoPanel"> </div>
             <div id="winBox"><?=$i18n->get("gameplay", "winNotice")?></div>
             <div id="bonusNotice"></div>
-            <div id="markCell" title="пометить или снять пометку">пометить клетку</div>
+            <div id="markCell" title="пометить или снять пометку">пометить цифру</div>
 
             <?php
             include '../snippets/lg-beacon.htm';

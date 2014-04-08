@@ -77,11 +77,11 @@ function SudokuUI(_gc) {
         if (f) {
             $("#tbSupermove").removeClass("cpNormal");
             $("#tbSupermove").addClass("cpHighlight");
-            $('#infoFieldPanel').fadeIn(100);
+            $('#gameMessage').html('Выберите клетку или нажмите ESC для отмены.').fadeIn(100);
         } else {
             $("#tbSupermove").removeClass("cpHighlight");
             $("#tbSupermove").addClass("cpNormal");
-            $('#infoFieldPanel').fadeOut(100);
+            $('#gameMessage').fadeOut(100);
         }
     }
 
@@ -135,12 +135,83 @@ function SudokuUI(_gc) {
 
     that.gc = _gc;
 
-    gameListRenderer = new GameListRenderer(gc, this, null);
+    gameListRenderer = new GameListRenderer(gc, this, {showDifficult:true});
     historyRenderer = new HistoryRenderer(gc, this, {
         showDays : false,
         showBestAttemptRank : false,
         bindCPButton : true
     });
+
+    this.updateGameStats = function () {
+//        _w("updateGameStats");
+
+        var gm = that.gc.getGameManager();
+
+//        alert(gm);
+
+        if (gm) {
+            var gameId = gm.getGameId();
+
+            var gameIdHTML = "<span>" + gameId + "</span>";
+
+            //////////
+
+            var gameInfo = gm.getGameInfo();
+
+            var gameInfoHTML = "—";
+
+            if (gameInfo.totalPlayed > 0) {
+                gameInfoHTML = (gameInfo.avgWinTime > 0 ? formatGameTimeMS(gameInfo.avgWinTime) : "—")
+                    + (that.options.showWinCount?" (" + gameInfo.totalWon + "/" + gameInfo.totalPlayed + ")":"");
+            }
+
+            gameInfoHTML = "<span>" + that.i18n.get("ratingLabel") + " " + gameInfoHTML + " </span>";
+
+            if (that.options.showGameLabel) {
+                gameInfoHTML = "<span>" + gameInfo.label + "</span> / " + gameInfoHTML;
+            }
+
+            //////////
+
+            var historyLengthHTML = "";
+
+            if (that.options.showHistoryLength) {
+                historyLengthHTML = "<span>" + that.i18n.get("historyLengthLabel")
+                    + " " + that.gc.getGameManager().getHistoryLength() + "</span>";
+            }
+
+            //////////
+
+            var gt = gm.getGameTimer();
+
+            var timeMS = gt.getTime();
+
+            var timeStr = formatGameTime(timeMS);
+
+            var totalGameTime = gm.getTotalGameTime();
+
+            var totalGameTimeStr = formatGameTime(totalGameTime);
+
+            if (gt.isFrozen()) {
+                var timeHTML = "<span class='frozenTime'>" + that.i18n.get("attemptTimeLabel") + " " + timeStr + "</span>";
+                var totalGameTimeHTML = "<span class='frozenTime'>" + that.i18n.get("gameTimeLabel") + " " + totalGameTimeStr + "</span>";
+            } else {
+                timeHTML = "<span>" + that.i18n.get("attemptTimeLabel") + " " + timeStr + "</span>";
+                totalGameTimeHTML = "<span>" + that.i18n.get("gameTimeLabel") + " " + totalGameTimeStr + "</span>";
+            }
+
+            //////////
+
+            $("#gameStatePanel").empty().append(gameIdHTML + " / "
+                + gameInfoHTML + " / "
+                + (that.options.showHistoryLength ? (historyLengthHTML + " / ") : "")
+                + timeHTML + " / " + totalGameTimeHTML);
+            if (!gc.gameType())$("#gameStatePanel").show();
+
+        } else {
+            that.setGameLoading();
+        }
+    };
 
     // HACK, TODO
     that.historyRenderer = historyRenderer;
