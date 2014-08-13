@@ -1,35 +1,47 @@
+
+importScripts('sudoku_solver.js');
+importScripts('underscore-min.js');
+var solver = new Solver(), tst, dif, solution, str;
 addEventListener('message', function(e) {
-    importScripts('sudoku_backtracking.js');
     if (typeof  e.data.puzzle == "undefined") {
+        postMessage(null);
+        return
+    }
+    solver.init(e.data.puzzle,-1);
+    tst = new Date();
+    solution = solver.getSolves();
+    tst = new Date() - tst;
+    if (!solution || solution.length!=1) {
+        console.log((solution?'multisolve ':'nosolution ')+e.data.puzzle);
+        postMessage(null);
         return;
     }
-    var puzzle = e.data.puzzle.split("").map(Number);
-    var out = [];
-    var clues = 0;
-    var tst = new Date();
-    for (var i = 0; i<= 8; i++){
-        var tmp = [];
-        for (var j = 0; j <= 8; j++){
-            tmp[j] = puzzle[i*9+j];
-            if ( tmp[j]!=0 ) clues ++;
-        }
-        out[i] = tmp;
+    solution = solution[0];
+    dif = solver.getDifficult();
+    if (solution.indexOf('0')!=-1 || dif.type!='H' || dif.difficult<2500 || (dif.type=='0'||dif.type=='I')){
+        postMessage(null);
+        return
     }
-    var sudoku = new Sudoku(out);
-    tst = new Date() - tst;
-    var difficult = sudoku.getDifficult();
-    if (e.data.clues != clues || e.data.solution!=sudoku.getStringSolution()) postMessage(null);
-    else
     postMessage({
         puzzle: e.data.puzzle,
-        solution:sudoku.getStringSolution(),
-        steps:sudoku.getSteps(),
-        backsteps:sudoku.getBacktracking(),
-        clues: clues,
-        difficult: difficult,
-        singles: sudoku.getSingles(),
-        hiddenSingles: sudoku.getHiddenSingles(),
-        first: sudoku.fSingle(),
+        solution:solution,
+        clues:  e.data.clues,
+        difficult: getStringDifficult(dif),
         time: tst
     });
 }, false);
+
+function getStringDifficult(dif){
+    str = "";
+    str =   dif.difficult+';'+
+            dif.steps+';';
+    for( var i=1; i<=10; i++){
+        if (typeof dif.moves[i]!="undefined"){
+            str+=dif.moves[i]+';'+dif.moves[i+'_']+';';
+        } else str+='0;0;';
+    }
+    str+=dif.type+';';
+    //console.log(JSON.stringify(dif));
+    //console.log(str);
+    return str;
+}

@@ -31,7 +31,7 @@ function SudokuParametersManager(_gc, _ui, _options) {
     var i18n = new I18n();
     i18n.setContext('parameters');
 
-    this.resetSettings = function () {
+      this.resetSettings = function () {
         if (isDef(options.defaultPlayMode)) {
             playMode = options.defaultPlayMode;
         } else {

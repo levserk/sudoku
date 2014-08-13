@@ -81,11 +81,11 @@ class SudokuServer extends SolitaireServer
         }
 
         if ($gameType == GT_EASY) {
-            $levelCondition = " difficult < 120";
+            $levelCondition = " difficult < 2000";
         } else if ($gameType == GT_NORMAL) {
-            $levelCondition = " difficult BETWEEN 150 AND 500";
+            $levelCondition = " difficult BETWEEN 2500 AND 3000";
         } else if ($gameType == GT_HARD) {
-            $levelCondition = " difficult > 600";
+            $levelCondition = " difficult > 3000";
         } else  $levelCondition = " difficult != 0";
         /*else if ($gameType == GT_UNSOLVED) {
             $levelCondition = " gameRating = 0 AND totalPlayed > 0 ";
@@ -223,11 +223,11 @@ class SudokuServer extends SolitaireServer
                 $ans = $puzzle['answer'];
                 $dif = $puzzle['difficult'];
                 $clu = $puzzle['clues'];
-                $res = smart_mysql_query("select 1 from `sudoku_gamelist` where `answer` = '$ans' ");
-                if (!mysql_fetch_row($res)){
+                //$res = smart_mysql_query("select 1 from `sudoku_gamelist` where `answer` = '$ans' ");
+                //if (!mysql_fetch_row($res)){
                     $query = "INSERT INTO `sudoku_gamelist` (`gameId`, `difficult`, `clues`, `puzzle`, `answer`) VALUES ($id, $dif, $clu, '$puz', '$ans');";
                     if (smart_mysql_query($query)) $id++;
-                }
+                //}
             }
         }
         return $id-$id1;

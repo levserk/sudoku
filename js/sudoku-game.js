@@ -102,7 +102,7 @@ function SudokuGame(){
         if (helpCell){ // hide
             hideHelp();
         } else { // show
-            if (!that.gc.gameType() && helpCount>=2){
+            if (!that.gc.gameType() && helpCount>=2 && false){// unlimited help
                 $('#gameMessage').html('В обычной игре доступно только 2 подсказки').fadeIn(100);
                 return;
             }
@@ -111,7 +111,7 @@ function SudokuGame(){
             console.log('help',(clue?clue.type:'no clue'), clue);
 
             if (clue && clue.cell){
-                saveMove(_GETHELP,clue.cell.i,clue.cell.j,clue.type,clue.type);
+                ///saveMove(_GETHELP,clue.cell.i,clue.cell.j,clue.type,clue.type);
                 helpCount++;
                 switch (clue.type){
                     case 0: //  mistake
@@ -1119,7 +1119,7 @@ function SudokuHelper(_sudoku){
     var grid,sz=9;
 
     this.getHelp = function(){
-        if (!checkValid()) return clue;
+       // if (!checkValid()) return clue;
         if (!checkClue()) clue = findNextTurn();
         return clue;
     };
@@ -1276,7 +1276,7 @@ function SudokuHelper(_sudoku){
                }
            }
        }
-        return false;
+       return false;
     }
 
     function isSHiddenSingle(ci,cj,f){ // f=true to update candidates; need in check

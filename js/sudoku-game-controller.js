@@ -22,6 +22,7 @@ var KEY_F9 = 120;
 var SUDOKU_HIGHER_GAME_ID_BOUND = 30000;
 
 function GameController(_cs, _serializer) {
+
     var that = this;
 
     var aboutToLogin = false;
@@ -38,7 +39,7 @@ function GameController(_cs, _serializer) {
 
     var fFindTurns = true, fSuperMove = false, fCancelSuperMove=false;
 
-    var freegame = false;
+    var freegame = false, randomNext = false;
 
     that.gameURL = "/sudoku";
 
@@ -93,6 +94,8 @@ function GameController(_cs, _serializer) {
             function (result, gameId, deck, attemptsData, gameInfo) {
                 if (result) {
                     $("#wonAttemptNotice").hide();
+                    if (!randomNext && freegame) swithGameType();
+                    randomNext = false;
                     if (that.isValidGameId(gameId)) {
                         that.addGameId(gameId);
 
@@ -292,24 +295,16 @@ function GameController(_cs, _serializer) {
         $('#tbNormalGame').click(function (){
             if (that.isGameActive() && (that.isGameValueless()) || true) {
                 if (freegame){ // goto normal
-                    freegame = false;
-                    $('#tbNormalGame').addClass('cpHighlight');
-                    $('#tbFreeGame').removeClass('cpHighlight');
+                    swithGameType();
                     that.startNextGame();
-                    $('#gameStatePanel').show();
-                    $('#attemptsPanel').show();
                 }
             }
         });
         $('#tbFreeGame').click(function (){
             if (that.isGameActive() && (that.isGameValueless()) || true) {
                 if (!freegame){ // goto free
-                    freegame = true;
-                    $('#tbFreeGame').addClass('cpHighlight');
-                    $('#tbNormalGame').removeClass('cpHighlight');
+                    swithGameType();
                     that.startNextGame();
-                    $('#gameStatePanel').hide();
-                    $('#attemptsPanel').hide();
                 }
             }
         });
@@ -323,6 +318,21 @@ function GameController(_cs, _serializer) {
         $(window).unload(function () {
             that.unload();
         });
+    }
+
+    function swithGameType(){
+        freegame = !freegame;
+        if (freegame){
+            $('#tbFreeGame').addClass('cpHighlight');
+            $('#tbNormalGame').removeClass('cpHighlight');
+            $('#gameStatePanel').hide();
+            $('#attemptsPanel').hide();
+        } else {
+            $('#tbNormalGame').addClass('cpHighlight');
+            $('#tbFreeGame').removeClass('cpHighlight');
+            $('#gameStatePanel').show();
+            $('#attemptsPanel').show();
+        }
     }
 
     this.keyDown = function (e) {
@@ -473,7 +483,7 @@ function GameController(_cs, _serializer) {
         that.cs = cs;
 
         parametersManager = new SudokuParametersManager(that, ui, {
-            defaultPlayMode : 1
+            defaultPlayMode : 0
         });
         parametersManager.applySettings(settingsObj);
 
@@ -481,8 +491,7 @@ function GameController(_cs, _serializer) {
 
         this.game = new SudokuGame();
         this.game.gc = that;
-
-        if (!!settingsObj) {
+        $("#buttons").hide(); if (!!settingsObj) {
             this.game.changeShowButtons(settingsObj.buttons, settingsObj.numClickPrior);
         }
         var timer = $.timer(function () {
@@ -501,6 +510,14 @@ function GameController(_cs, _serializer) {
         } else {
             this.requestGame(gameState.gameId, gameState.attemptId);
         }
+
+        // TODO: hide danger buttons
+        $('#tbFreeGame').hide();
+        if (!cs.isSuperUser()){
+            $('#tbFreeGame').hide();
+            $('#tbSupermove').hide();
+        }
+
     }
 
     this.unload = function () {
@@ -551,6 +568,7 @@ function GameController(_cs, _serializer) {
     multiExtendClass(GameController, NewGameLister, this);
 
     this.startNextGame = function (callbackFn) {
+        randomNext = true;
         if (!that.hasNext()) {
             that.requestGame(-1, -1, callbackFn, BEGIN_NEW_ATTEMPT);
         } else {

@@ -32,7 +32,7 @@ if($s->isSuperUser()){
                         difficult: parseInt(pzls[3])
                     });
                     } catch(e){}
-                    if (n>499) break;
+                    if (n>248) break;
                 }
                 i+=n;
                 if (puzzles.length>0)

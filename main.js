@@ -1,9 +1,13 @@
 window.onload = function(){
     min = 1;
     max = 999999999;
-    file = "pzl/pzl_26.csv";
+    file = "pzl/pzl10.csv";
 
-    var solver = new Solver('510000000200004000000700006600039104000000000030060002400900027090000050078006090');
+    solver = new Solver();
+    solver.init('000060009003000800000010000000040750900005400060700001024000000000800006700900100 ', -1);
+    console.log(solver.getSolves());
+    solver.init('000060009003000800000010000000040750900005400060700001024000000000800006700900100 ', -1);
+    console.log(solver.getSolves());
 
     document.getElementById('btn2').onclick = function(){
         var lines;
@@ -12,6 +16,7 @@ window.onload = function(){
         var value="";
         var n=-1;
         var numWorkers=4;
+        var workers = [];
         var done=false;
 
         if (document.getElementById('text').value.length>0)start(document.getElementById('text').value);
@@ -27,6 +32,7 @@ window.onload = function(){
                 worker.onerror = function(e){
                     console.log(e);
                 }
+                workers.push(worker);
                 solveNext(worker);
             }
         }
@@ -37,9 +43,7 @@ window.onload = function(){
             if (e.data!=null){
                 //console.log(e.data);
                 value+=' "'+ e.data.puzzle+'"; "'+ e.data.solution+'"; '
-                    + e.data.clues + '; ' + e.data.difficult+'; ' + e.data.steps+'; '
-                    + e.data.singles + '; ' + e.data.hiddenSingles+'; '
-                    + e.data.backsteps +'; '+ e.data.time+'; '+e.data.first+'; \n';
+                    + e.data.clues + '; ' + e.data.difficult + e.data.time+'; \n';
             }
             solveNext(this);
         }
