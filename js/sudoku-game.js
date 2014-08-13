@@ -326,6 +326,7 @@ function SudokuGame(){
         helpCell = null;
         hideHelp();
         fStartGame = true;
+        marks.clear();
     }
 
     function updated(){
@@ -791,6 +792,14 @@ function SudokuGame(){
             isMarked : function(cell){
                 if (markedCells.length==0) return false;
                 return (!!markmap[cell.getId()]);
+            },
+            clear : function(){
+                fIsMarking = false;
+                markmap = {};
+                markedCells.forEach(function(cell){
+                    $('#mark'+cell.i+cell.j).remove();
+                })
+                markedCells = [];
             }
         }
     }());
