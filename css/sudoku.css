@@ -1,3 +1,6 @@
+html, body {
+    overflow-y: auto;
+}
 body{
     background: #B1B5B9;
 }
